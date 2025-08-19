@@ -1,0 +1,9 @@
+{
+  "name": "worksheet-generator",
+  "version": "1.0.0",
+  "description": "Handwriting Worksheet Generator for GitHub Pages",
+  "main": "index.html",
+  "scripts": {},
+  "author": "nagasakimark",
+  "license": "MIT"
+}

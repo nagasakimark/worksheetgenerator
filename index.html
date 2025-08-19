@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Worksheet Generator</title>
+    <style>
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('font.otf') format('opentype');
+        }
+
+        @font-face {
+            font-family: 'WritingFont';
+            src: url('writingfont.otf') format('opentype');
+        }
+
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #f27474;
+            --bg-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #ddd;
+            --card-bg: white;
+            --input-bg: white;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #6b8cff;
+            --secondary-color: #ff8a8a;
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --card-bg: #2d2d2d;
+            --input-bg: #3d3d3d;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'CustomFont', sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .app-description {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(74, 108, 247, 0.3);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .radio-option input {
+            margin-right: 5px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3755d8;
+        }
+        
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .checkbox-option input {
+            margin-right: 8px;
+        }
+        
+        #excelOptions {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        #wordInput {
+            display: block;
+        }
+        
+        #previewContainer {
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 5px;
+            background: white;
+            min-height: 200px;
+        }
+        
+        .preview-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .preview-content {
+            font-family: 'Comic Sans MS', cursive;
+            line-height: 2;
+        }
+        
+        .progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .progress-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background-color: #3755d8;
+        }
+
+        .save-load-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .save-load-buttons button {
+            flex: 1;
+        }
+
+        .font-preview {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .print-button {
+            background-color: var(--secondary-color);
+            margin-left: 15px;
+        }
+
+        .print-button:hover {
+            background-color: #e05c5c;
+        }
+    </style>
+        <!-- PWA manifest and service worker -->
+        <link rel="manifest" href="manifest.json">
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('service-worker.js');
+                });
+            }
+        </script>
+        <!-- Load external libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">Toggle Dark Mode</button>
+    <div class="container">
+        <header>
+            <h1>Writing Worksheet Generator</h1>
+            <p class="app-description">Create custom handwriting practice worksheets in seconds</p>
+        </header>
+        
+        <div class="section">
+            <h2>1. Input Method</h2>
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="wordInput" name="inputMethod" value="words" checked>
+                    <label for="wordInput">Paste Words (one per line)</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="excelInput" name="inputMethod" value="excel">
+                    <label for="excelInput">Upload Excel File</label>
+                </div>
+            </div>
+            
+            <div id="wordInput">
+                <div class="input-group">
+                    <label for="wordsTextarea">Enter words, one per line:</label>
+                    <textarea id="wordsTextarea" placeholder="apple&#10;banana&#10;carrot&#10;dolphin"></textarea>
+                </div>
+            </div>
+            
+            <div id="excelOptions">
+                <div class="input-group">
+                    <label for="excelFile">Upload Excel File (.xlsx):</label>
+                    <input type="file" id="excelFile" accept=".xlsx">
+                </div>
+                <div class="input-group" id="columnSelection" style="display: none;">
+                    <label for="wordColumn">Which column contains the words?</label>
+                    <select id="wordColumn"></select>
+                    <div class="checkbox-group" style="margin-top: 10px;">
+                        <label><input type="checkbox" id="multipleColumns"> Select multiple columns (for multiple worksheets)</label>
+                    </div>
+                    <div id="multiColumnSelection" style="display: none; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Worksheet Settings</h2>
+            <div class="input-group">
+                <label for="worksheetTitle">Worksheet Title:</label>
+                <input type="text" id="worksheetTitle" placeholder="Handwriting Practice">
+            </div>
+            
+            <div class="input-group">
+                <label for="examplesPerWord">Number of examples per line:</label>
+                <input type="number" id="examplesPerWord" min="1" value="2">
+            </div>
+            
+            <div class="input-group">
+                <label>Header Information:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="includeYear">
+                        <label for="includeYear">Year</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="includeClass">
+                        <label for="includeClass">Class</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="includeStudentNumber">
+                        <label for="includeStudentNumber">Student Number</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="includeStudentName">
+                        <label for="includeStudentName">Student Name</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Page Layout (Optional):</label>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="fontFamily">Font Style:</label>
+                    <select id="fontFamily">
+                        <option value="WritingFont">Standard Writing</option>
+                        <option value="Comic Sans MS">Comic Sans</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                    </select>
+                    <div class="font-preview" id="fontPreview">Preview Text</div>
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="fontSize">Font Size:</label>
+                    <input type="number" id="fontSize" min="8" max="24" value="16">
+                </div>
+                <div class="input-group">
+                    <label for="lineHeight">Line Height:</label>
+                    <input type="number" id="lineHeight" min="1" max="5" step="0.1" value="2">
+                </div>
+                <div class="input-group">
+                    <label for="pageMargin">Page Margins (mm):</label>
+                    <input type="number" id="pageMargin" min="5" max="50" value="20">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Preview & Generate</h2>
+            <button id="previewButton">Preview Worksheet</button>
+            <button id="generateButton" style="margin-left: 15px; background-color: #2ecc71;">Generate PDF</button>
+            <button id="printButton" class="print-button">Print Worksheet</button>
+            
+            <div class="save-load-buttons">
+                <button id="saveConfigButton" style="background-color: #9b59b6;">Save Configuration</button>
+                <button id="loadConfigButton" style="background-color: #3498db;">Load Configuration</button>
+            </div>
+            
+            <div id="previewContainer">
+                <div class="preview-title">Worksheet Preview</div>
+                <div class="preview-header">
+                    <div id="previewHeaderLeft"></div>
+                    <div id="previewHeaderRight"></div>
+                </div>
+                <div class="preview-content" id="previewContent">
+                    <!-- Preview content will be inserted here -->
+                    <p style="text-align: center; color: #999; margin-top: 50px;">Preview will appear here after clicking "Preview Worksheet"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress-overlay" id="progressOverlay">
+        <div class="progress-container">
+            <div class="spinner"></div>
+            <p id="progressMessage">Generating PDF...</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const inputMethodRadios = document.querySelectorAll('input[name="inputMethod"]');
+        const wordInputDiv = document.getElementById('wordInput');
+        const excelOptionsDiv = document.getElementById('excelOptions');
+        const excelFileInput = document.getElementById('excelFile');
+        const columnSelectionDiv = document.getElementById('columnSelection');
+        const wordColumnSelect = document.getElementById('wordColumn');
+        const multipleColumnsCheckbox = document.getElementById('multipleColumns');
+        const multiColumnSelectionDiv = document.getElementById('multiColumnSelection');
+        const wordsTextarea = document.getElementById('wordsTextarea');
+        const examplesPerWordInput = document.getElementById('examplesPerWord');
+        const worksheetTitleInput = document.getElementById('worksheetTitle');
+        const includeYearCheckbox = document.getElementById('includeYear');
+        const includeClassCheckbox = document.getElementById('includeClass');
+        const includeStudentNumberCheckbox = document.getElementById('includeStudentNumber');
+        const includeStudentNameCheckbox = document.getElementById('includeStudentName');
+        const fontSizeInput = document.getElementById('fontSize');
+        const lineHeightInput = document.getElementById('lineHeight');
+        const pageMarginInput = document.getElementById('pageMargin');
+        const previewButton = document.getElementById('previewButton');
+        const generateButton = document.getElementById('generateButton');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewContent = document.getElementById('previewContent');
+        const previewHeaderLeft = document.getElementById('previewHeaderLeft');
+        const previewHeaderRight = document.getElementById('previewHeaderRight');
+        const progressOverlay = document.getElementById('progressOverlay');
+        const progressMessage = document.getElementById('progressMessage');
+        const themeToggle = document.getElementById('themeToggle');
+        const fontFamilySelect = document.getElementById('fontFamily');
+        const fontPreview = document.getElementById('fontPreview');
+        const saveConfigButton = document.getElementById('saveConfigButton');
+        const loadConfigButton = document.getElementById('loadConfigButton');
+        const printButton = document.getElementById('printButton');
+
+        // Input method selection
+        inputMethodRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'words') {
+                    wordInputDiv.style.display = 'block';
+                    excelOptionsDiv.style.display = 'none';
+                } else {
+                    wordInputDiv.style.display = 'none';
+                    excelOptionsDiv.style.display = 'block';
+                }
+            });
+        });
+
+        // Excel file handling
+        excelFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (jsonData.length > 0) {
+                        const headers = jsonData[0];
+                        populateColumnDropdown(headers);
+                        columnSelectionDiv.style.display = 'block';
+                    } else {
+                        alert('The Excel file appears to be empty.');
+                    }
+                } catch (error) {
+                    console.error('Error parsing Excel file:', error);
+                    alert('Error parsing Excel file. Please check the format.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Populate column dropdown from Excel headers
+        function populateColumnDropdown(headers) {
+            wordColumnSelect.innerHTML = '';
+            multiColumnSelectionDiv.innerHTML = '';
+            
+            headers.forEach((header, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = header || `Column ${index + 1}`;
+                wordColumnSelect.appendChild(option);
+                
+                // Also add checkboxes for multiple column selection
+                const checkbox = document.createElement('div');
+                checkbox.className = 'checkbox-option';
+                checkbox.innerHTML = `
+                    <input type="checkbox" id="column-${index}" value="${index}">
+                    <label for="column-${index}">${header || `Column ${index + 1}`}</label>
+                `;
+                multiColumnSelectionDiv.appendChild(checkbox);
+            });
+        }
+
+        // Toggle multiple column selection
+        multipleColumnsCheckbox.addEventListener('change', () => {
+            multiColumnSelectionDiv.style.display = multipleColumnsCheckbox.checked ? 'block' : 'none';
+        });
+
+        // Preview worksheet
+        previewButton.addEventListener('click', () => {
+            generatePreview();
+        });
+
+        // Generate PDF
+        generateButton.addEventListener('click', async () => {
+            showProgress('Generating PDF...');
+            setTimeout(async () => {
+                try {
+                    await generatePDF();
+                    hideProgress();
+                } catch (error) {
+                    console.error('Error generating PDF:', error);
+                    alert('Error generating PDF. Please try again.');
+                    hideProgress();
+                }
+            }, 100);
+        });
+
+        // Generate worksheet preview
+        function generatePreview() {
+            let words = [];
+            
+            if (document.querySelector('input[name="inputMethod"]:checked').value === 'words') {
+                words = wordsTextarea.value.split('\n').filter(word => word.trim() !== '');
+            } else {
+                words = ['Sample', 'Excel', 'Words', 'Go', 'Here'];
+            }
+            
+            if (words.length === 0) {
+                alert('Please enter at least one word for the worksheet.');
+                return;
+            }
+            
+            const title = worksheetTitleInput.value || 'Handwriting Practice';
+            const examplesPerWord = parseInt(examplesPerWordInput.value) || 2;
+            
+            updateHeaderPreview();
+            
+            previewContent.innerHTML = `<h3 style="text-align: center; margin-bottom: 20px;">${title}</h3>`;
+            
+            words.forEach(word => {
+                let line = '';
+                // Add the word with proper spacing
+                for (let i = 0; i < examplesPerWord; i++) {
+                    line += word + ' ';
+                }
+                
+                // Add guidelines using underscores
+                const guidelineWidth = 60; // Adjust this value to match your needs
+                const remainingSpace = Math.max(0, guidelineWidth - line.length);
+                const guidelines = '_'.repeat(remainingSpace);
+                
+                previewContent.innerHTML += `
+                    <div style="margin-bottom: 15px; font-family: 'WritingFont', cursive;">
+                        <span style="color: #666;">${line}</span>${guidelines}
+                    </div>`;
+            });
+        }
+
+        // Update header preview based on selected options
+        function updateHeaderPreview() {
+            let leftHeader = '';
+            let rightHeader = '';
+            
+            if (includeYearCheckbox.checked) {
+                leftHeader += 'Year: _________<br>';
+            }
+            
+            if (includeClassCheckbox.checked) {
+                leftHeader += 'Class: _________<br>';
+            }
+            
+            if (includeStudentNumberCheckbox.checked) {
+                rightHeader += 'Student #: _________<br>';
+            }
+            
+            if (includeStudentNameCheckbox.checked) {
+                rightHeader += 'Name: _________<br>';
+            }
+            
+            previewHeaderLeft.innerHTML = leftHeader;
+            previewHeaderRight.innerHTML = rightHeader;
+        }
+
+        // Generate PDF function
+        async function generatePDF() {
+            const { PDFDocument, rgb } = PDFLib;
+
+            // Create a new PDF document
+            const pdfDoc = await PDFDocument.create();
+            
+            // Register fontkit
+            pdfDoc.registerFontkit(fontkit);
+
+            // Get words from input
+            const words = document.querySelector('input[name="inputMethod"]:checked').value === 'words'
+                ? wordsTextarea.value.split('\n').filter(word => word.trim() !== '')
+                : ['Sample', 'Excel', 'Words']; // Replace with actual Excel data when implemented
+
+            try {
+                // Load custom fonts
+                const customFontBytes = await fetch('font.otf').then(res => res.arrayBuffer());
+                const writingFontBytes = await fetch('writingfont.otf').then(res => res.arrayBuffer());
+
+                // Embed fonts
+                const customFont = await pdfDoc.embedFont(customFontBytes);
+                const writingFont = await pdfDoc.embedFont(writingFontBytes);
+
+                // Get settings
+                const title = worksheetTitleInput.value || 'Handwriting Practice';
+                const examplesPerWord = parseInt(examplesPerWordInput.value) || 2;
+                const fontSize = parseInt(fontSizeInput.value) || 16;
+                const lineHeight = parseFloat(lineHeightInput.value) || 2;
+                const pageMargin = parseInt(pageMarginInput.value) || 20;
+
+                // Convert margin from mm to points (1 mm ≈ 2.83465 points)
+                const marginPoints = pageMargin * 2.83465;
+
+                // Add a page to the document
+                let page = pdfDoc.addPage([595.28, 841.89]); // A4 size in points
+                const pageWidth = page.getWidth();
+                const pageHeight = page.getHeight();
+
+                // Draw title using custom font
+                const titleWidth = customFont.widthOfTextAtSize(title, fontSize * 1.5);
+                page.drawText(title, {
+                    x: (pageWidth - titleWidth) / 2,
+                    y: pageHeight - marginPoints - fontSize * 1.5,
+                    size: fontSize * 1.5,
+                    font: customFont,
+                    color: rgb(0, 0, 0)
+                });
+
+                // Start Y position for word lines
+                let startY = pageHeight - marginPoints - fontSize * 4;
+
+                // Calculate the target line width (80% of available width)
+                const availableWidth = pageWidth - (2 * marginPoints);
+                const targetLineWidth = availableWidth * 0.8;
+
+                // Draw word practice lines using writing font
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i];
+
+                    // If we've reached the bottom of the page, add a new page
+                    if (startY < marginPoints + fontSize) {
+                        page = pdfDoc.addPage([595.28, 841.89]);
+                        startY = pageHeight - marginPoints - fontSize;
+                    }
+
+                    // Calculate the width of a single word
+                    const wordWidth = writingFont.widthOfTextAtSize(word, fontSize);
+                    
+                    // Calculate the width of a pipe character
+                    const pipeWidth = writingFont.widthOfTextAtSize('|', fontSize);
+                    
+                    // Create the example words at the beginning
+                    let line = word + ' ' + word;
+                    
+                    // Calculate remaining width for pipes
+                    const exampleWordsWidth = writingFont.widthOfTextAtSize(line, fontSize);
+                    const remainingWidth = targetLineWidth - exampleWordsWidth;
+                    const numPipes = Math.floor(remainingWidth / pipeWidth);
+                    
+                    // Add pipes to fill the remaining space
+                    line += '|'.repeat(numPipes);
+
+                    // Calculate the actual width of the line
+                    const lineWidth = writingFont.widthOfTextAtSize(line, fontSize);
+                    
+                    // Center the line on the page
+                    const xOffset = (pageWidth - lineWidth) / 2;
+
+                    // Draw the practice words with pipes
+                    page.drawText(line, {
+                        x: xOffset,
+                        y: startY,
+                        size: fontSize,
+                        font: writingFont,
+                        color: rgb(0.4, 0.4, 0.4) // Light gray color for the example text
+                    });
+
+                    // Move to the next line
+                    startY -= fontSize * lineHeight;
+                }
+
+                // Save the PDF
+                const pdfBytes = await pdfDoc.save();
+
+                // Download the PDF
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${title.replace(/\s+/g, '-')}.pdf`;
+                link.click();
+            } catch (error) {
+                console.error('Font loading error:', error);
+                throw error;
+            }
+        }
+
+        // Show progress overlay
+        function showProgress(message) {
+            progressMessage.textContent = message;
+            progressOverlay.style.display = 'flex';
+        }
+
+        // Hide progress overlay
+        function hideProgress() {
+            progressOverlay.style.display = 'none';
+        }
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // Font preview functionality
+        fontFamilySelect.addEventListener('change', () => {
+            fontPreview.style.fontFamily = fontFamilySelect.value;
+        });
+
+        // Save configuration
+        saveConfigButton.addEventListener('click', () => {
+            const config = {
+                words: wordsTextarea.value,
+                title: worksheetTitleInput.value,
+                examplesPerWord: examplesPerWordInput.value,
+                fontSize: fontSizeInput.value,
+                lineHeight: lineHeightInput.value,
+                pageMargin: pageMarginInput.value,
+                fontFamily: fontFamilySelect.value,
+                includeYear: includeYearCheckbox.checked,
+                includeClass: includeClassCheckbox.checked,
+                includeStudentNumber: includeStudentNumberCheckbox.checked,
+                includeStudentName: includeStudentNameCheckbox.checked
+            };
+
+            const blob = new Blob([JSON.stringify(config)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'worksheet-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Load configuration
+        loadConfigButton.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    try {
+                        const config = JSON.parse(event.target.result);
+                        
+                        wordsTextarea.value = config.words || '';
+                        worksheetTitleInput.value = config.title || '';
+                        examplesPerWordInput.value = config.examplesPerWord || 2;
+                        fontSizeInput.value = config.fontSize || 16;
+                        lineHeightInput.value = config.lineHeight || 2;
+                        pageMarginInput.value = config.pageMargin || 20;
+                        fontFamilySelect.value = config.fontFamily || 'WritingFont';
+                        includeYearCheckbox.checked = config.includeYear || false;
+                        includeClassCheckbox.checked = config.includeClass || false;
+                        includeStudentNumberCheckbox.checked = config.includeStudentNumber || false;
+                        includeStudentNameCheckbox.checked = config.includeStudentName || false;
+                        
+                        // Update font preview
+                        fontPreview.style.fontFamily = fontFamilySelect.value;
+                        
+                        // Generate preview with new settings
+                        generatePreview();
+                    } catch (error) {
+                        console.error('Error loading configuration:', error);
+                        alert('Error loading configuration file. Please check the format.');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        });
+
+        // Print functionality
+        printButton.addEventListener('click', () => {
+            const printWindow = window.open('', '_blank');
+            const content = document.getElementById('previewContent').innerHTML;
+            
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Print Worksheet</title>
+                        <style>
+                            body {
+                                font-family: ${fontFamilySelect.value}, sans-serif;
+                                font-size: ${fontSizeInput.value}px;
+                                line-height: ${lineHeightInput.value};
+                                padding: ${pageMarginInput.value}mm;
+                            }
+                            @media print {
+                                body {
+                                    margin: 0;
+                                    padding: ${pageMarginInput.value}mm;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${content}
+                    </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Wait for fonts to load
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        });
+
+        // Update font preview on load
+        fontPreview.style.fontFamily = fontFamilySelect.value;
+    </script>
+</body>
+</html>

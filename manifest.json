@@ -1,0 +1,10 @@
+{
+  "name": "Worksheet Generator",
+  "short_name": "WorksheetGen",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#4a6cf7",
+  "description": "Create custom handwriting practice worksheets.",
+  "icons": []
+}
